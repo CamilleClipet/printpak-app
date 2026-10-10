@@ -123,7 +123,7 @@ requests carrying a tunnel's hostname).
 
 ## Deploying
 
-The live site is <https://shepplock.github.io/tram/> (GitHub Pages).
+The live site is <https://camilleclipet.github.io/printpak-app/> (GitHub Pages).
 
 Deployment is automatic: pushing to `main` (with changes under `app/`)
 triggers `.github/workflows/deploy.yml`, which installs dependencies, runs
