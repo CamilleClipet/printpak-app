@@ -54,8 +54,8 @@ editor ([VS Code](https://code.visualstudio.com/) is a good default).
 ## Setting up the project
 
 ```sh
-git clone git@github.com:Shepplock/tram.git
-cd tram/app
+git clone git@github.com:CamilleClipet/printpak-app.git
+cd printpak-app/app
 npm install
 ```
 
