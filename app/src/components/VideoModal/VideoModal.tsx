@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { saveFile, shareFile } from '../../platform';
 import styles from './VideoModal.module.scss';
 
 export function VideoModal({ blob, fps, onClose }: { blob: Blob; fps: number; onClose: () => void }) {
@@ -20,23 +21,9 @@ export function VideoModal({ blob, fps, onClose }: { blob: Blob; fps: number; on
   const info = `${ext} · ${fps} fps · ${(blob.size / 1048576).toFixed(1)} MB`;
 
   const save = async () => {
-    const file = new File([blob], `printpak.${ext.toLowerCase()}`, { type: blob.type });
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file] });
-        return;
-      } catch (e) {
-        if ((e as Error)?.name === 'AbortError') return;
-        // fall through to the download link on any other share failure
-      }
-    }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(file);
-    a.download = file.name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    const name = `printpak.${ext.toLowerCase()}`;
+    const r = await shareFile(blob, name);
+    if (r === 'unsupported') await saveFile(blob, name);
   };
 
   const close = () => {

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { ChooserCancelled, bluetoothSupported, connect, disconnect, sendJob } from '../printer/bluetooth';
+import { ChooserCancelled } from '../platform';
+import { supported as bluetoothSupported, connect, disconnect, sendJob } from '../printer/printJob';
 import { PRINT_WIDTH, rgbaToBitmap, type Bitmap, type Darkness } from '../printer/protocol';
 
 export type PrinterStatus = 'unsupported' | 'disconnected' | 'connecting' | 'connected' | 'printing';

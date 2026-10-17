@@ -12,8 +12,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 const BASE = '/printpak-app/'
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
-  base: command === 'build' ? BASE : '/',
+export default defineConfig(({ command, mode }) => ({
+  base: mode === 'native' ? './' : command === 'build' ? BASE : '/',
   server: {
     // Dev server normally rejects requests whose Host header isn't
     // localhost/a configured domain — which is exactly what a tunnel
@@ -28,8 +28,8 @@ export default defineConfig(({ command }) => ({
     // on the same Wi-Fi, at https://<lan-ip>:5173 (run `npm run dev --
     // --host` to expose it). Build-time only concern is dev, so skip it for
     // `vite build` (the deployed site is already served over real HTTPS).
-    ...(command === 'build' ? [] : [basicSsl()]),
-    VitePWA({
+    ...(command === 'build' || mode === 'native' ? [] : [basicSsl()]),
+    ...(mode === 'native' ? [] : [VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable.png'],
       manifest: {
@@ -53,7 +53,7 @@ export default defineConfig(({ command }) => ({
         // network directly rather than serving a cached copy).
         navigateFallbackDenylist: [/\?/],
       },
-    }),
+    })]),
   ],
   test: {
     environment: 'jsdom',

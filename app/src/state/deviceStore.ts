@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Darkness } from '../printer/protocol';
-import { storage } from '../services/storage';
+import { storage } from '../platform';
 
 /** Describes the printer/paper, not a photo — one object, one storage key. */
 export interface DeviceSettings {
