@@ -41,7 +41,8 @@ const flatten = (packets: Uint8Array[]) => packets.flatMap((packet) => [...packe
 describe('printJob', () => {
   it('writes encoded bytes and reports monotonic progress through 1', async () => {
     const fake = fakeTransport();
-    const printer = createPrinter(fake.transport, { sleep: async () => {} });
+    let elapsed = 0;
+    const printer = createPrinter(fake.transport, { sleep: async (ms) => { elapsed += ms; } });
     await printer.connect(() => {});
     const progress: number[] = [];
     const image = bitmap();
@@ -96,5 +97,19 @@ describe('printJob', () => {
   it('rejects when sendJob is called before connect', async () => {
     const printer = createPrinter(fakeTransport().transport, { sleep: vi.fn(async () => {}) });
     await expect(printer.sendJob(bitmap(), 2, () => {})).rejects.toThrow('printer disconnected');
+  });
+
+  it('uses a transport reconnect method when reconnect is requested', async () => {
+    const fake = fakeTransport();
+    const reconnect = vi.fn(async (hooks: Parameters<PrinterTransport['connect']>[0]) => {
+      fake.notify(Uint8Array.of(0x51));
+      void hooks;
+      return 'Reconnected Printer';
+    });
+    const transport: PrinterTransport = { ...fake.transport, reconnect };
+    const printer = createPrinter(transport, { sleep: async () => {} });
+
+    await expect(printer.connect(() => {}, true)).resolves.toBe('Reconnected Printer');
+    expect(reconnect).toHaveBeenCalledOnce();
   });
 });

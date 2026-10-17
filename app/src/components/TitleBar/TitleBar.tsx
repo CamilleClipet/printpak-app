@@ -11,8 +11,8 @@ function PrinterStatus() {
   if (status === 'unsupported') return <span className={styles.sub}>Dither for thermal printers</span>;
 
   const on = status === 'connected' || status === 'printing';
-  const busy = status === 'connecting' || status === 'printing';
-  const label = status === 'connecting' ? 'Connecting…' : status === 'printing' ? 'Printing…' : on ? name : 'No printer';
+  const busy = status === 'connecting' || status === 'scanning' || status === 'printing';
+  const label = status === 'connecting' ? 'Connecting…' : status === 'scanning' ? 'Searching…' : status === 'printing' ? 'Printing…' : on ? name : 'No printer';
 
   return (
     <button

@@ -26,6 +26,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Print Pak uses the camera to take photos to dither and print.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Print Pak uses Bluetooth to send images to your thermal printer.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
