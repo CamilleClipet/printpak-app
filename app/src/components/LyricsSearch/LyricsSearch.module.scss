@@ -1,6 +1,11 @@
 .overlay {
   position: fixed; inset: 0; z-index: 70; background: rgba(15, 20, 10, .93);
-  display: flex; align-items: center; justify-content: center; padding: 18px;
+  display: flex; align-items: center; justify-content: center;
+  // Keep the box clear of the status bar / notch and the home indicator /
+  // gesture bar (insets are 0 in a desktop browser, so 18px there as before).
+  padding:
+    calc(18px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right))
+    calc(18px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));
 }
 .box {
   background: var(--shell); border: 3px solid var(--ink); padding: 14px;

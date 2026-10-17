@@ -20,6 +20,7 @@ import { usePresetsStore } from './state/presetsStore';
 import { useSkinStore } from './state/skins';
 import { useToneStore } from './state/toneStore';
 import { useUiStore } from './state/uiStore';
+import { hideNativeSplash } from './platform/native/shell';
 
 function App() {
   const loadDevice = useDeviceStore((s) => s.load);
@@ -35,6 +36,7 @@ function App() {
   const setCameraOpen = useUiStore((s) => s.setCameraOpen);
 
   useEffect(() => {
+    hideNativeSplash();
     loadSkin();
     loadDevice();
     loadPresets();

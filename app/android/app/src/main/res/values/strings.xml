@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Print Pak</string>
+    <string name="title_activity_main">Print Pak</string>
+    <string name="package_name">printpak.app</string>
+    <string name="custom_url_scheme">printpak.app</string>
+</resources>

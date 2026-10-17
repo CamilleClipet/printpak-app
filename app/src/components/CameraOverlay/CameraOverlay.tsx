@@ -6,6 +6,7 @@ import { useImportFiles } from '../../hooks/useImportFiles';
 import { useLiveDither } from '../../hooks/useLiveDither';
 import { useVideoRecording } from '../../hooks/useVideoRecording';
 import { formatElapsed } from '../../services/videoRecording';
+import { registerNativeBackDismiss } from '../../platform/native/backDismissRegistry';
 import { Slider } from '../Slider/Slider';
 import { VideoModal } from '../VideoModal/VideoModal';
 import { useBatchStore } from '../../state/batchStore';
@@ -43,6 +44,14 @@ export function CameraOverlay({ onClose }: { onClose: () => void }) {
   const setDevice = useDeviceStore((s) => s.setDevice);
   const [video, setVideo] = useState<Blob | null>(null);
   const [pct, setPct] = useState(0);
+
+  useEffect(() => {
+    if (!video) return;
+    return registerNativeBackDismiss(110, () => {
+      setVideo(null);
+      return true;
+    });
+  }, [video]);
 
   useLiveDither(videoRef, canvasRef, facing, true, (r) => setPct(r.pct));
   const { mimeType, recording, elapsedMs, start: startRec, stop: stopRec } = useVideoRecording(

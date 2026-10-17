@@ -12,6 +12,29 @@ dist
 dist-ssr
 *.local
 
+# Capacitor native build artifacts; keep native project sources tracked.
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+android/.idea/
+android/.externalNativeBuild/
+android/.cxx/
+ios/App/Pods/
+ios/App/build/
+ios/App/DerivedData/
+ios/App/SourcePackages/
+ios/App/CapApp-SPM/.build/
+ios/DerivedData/
+ios/.build/
+ios/**/xcuserdata/
+ios/**/*.xcuserstate
+ios/fastlane/report.xml
+ios/fastlane/Preview.html
+ios/fastlane/screenshots/
+ios/fastlane/test_output/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
