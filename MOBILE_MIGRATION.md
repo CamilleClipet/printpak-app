@@ -202,3 +202,12 @@ The Phase 0 platform layer (`printerTransport`, `saveFile/shareFile`, `storage`)
 existing `CanvasFactory` (`engine/canvas.ts`) are the same seams a React Native port would need.
 If you migrate later, the engine, `printer/protocol.ts`, the shared `sendJob` logic and the stores
 carry over. Only the UI and these platform adapters would be rewritten.
+
+## Known issues / backlog (found during testing)
+
+- Camera front/back switch is not smooth (pre-existing on web too, `useCamera` restarts the stream). Fix independently of the migration.
+- Android logs `Error injecting safe area CSS` at launch (Capacitor SystemBars); layout is correct.
+- "Printed." appears before a long print physically finishes (pre-existing; BLE writes resolve when queued). A time estimate was tried and rejected. Notifications are logged as hex (`[printer]`) to look for a real "done" signal later. Not part of the migration.
+- Android BLE printing untested on a real device (no device available).
+- Phase 3 first attempt (share plugin + Preferences storage + deep links) made the iOS app very slow, froze, then black screen on relaunch. Reverted (kept in `git stash`, "phase3-attempt (reverted)"). Redo Phase 3 in small, separately tested steps.
+- Long-press → "Save to Photos" on the exported PNG crashed the iOS app (missing `NSPhotoLibraryAddUsageDescription`). Fixed by adding it to Info.plist; tested OK on iPhone (save, import, print).
