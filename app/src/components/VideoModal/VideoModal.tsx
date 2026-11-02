@@ -32,13 +32,16 @@ export function VideoModal({ blob, fps, onClose }: { blob: Blob; fps: number; on
   };
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.box}>
+    <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Recorded video">
+      <header className={styles.head}>
+        <span className={styles.title}>Recorded video</span>
+        <button type="button" className={styles.x} aria-label="Close" onClick={close}>×</button>
+      </header>
+      <div className={styles.body}>
         {url && <video ref={videoRef} className={styles.video} src={url} controls loop playsInline />}
         <p className={styles.info}>{info}</p>
         <p className={styles.hint}>Video doesn't save the same way as a photo — use the button below.</p>
         <button type="button" className={styles.save} onClick={save}>Save video</button>
-        <button type="button" className={styles.close} onClick={close}>Close</button>
       </div>
     </div>
   );

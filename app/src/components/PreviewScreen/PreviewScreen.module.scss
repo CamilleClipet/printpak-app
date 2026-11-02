@@ -13,7 +13,7 @@
 }
 .canvas { image-rendering: pixelated; max-width: 100%; max-height: calc(40vh - 20px); display: block; }
 .liveButton {
-  background: transparent; border: 0; padding: 0; width: 100%; height: 100%; cursor: pointer;
+  background: transparent; border: 0; padding: 0; width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
 }
 .empty {
@@ -21,11 +21,26 @@
   text-align: center; padding: 30px 10px; background: transparent; border: 0; width: 100%; cursor: pointer;
 }
 .liveFlip {
-  position: absolute; right: 6px; bottom: 6px; z-index: 2;
+  position: absolute; right: 7px; top: 7px; z-index: 3;
   font-family: var(--mono); font-size: 8.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
   padding: 7px 9px; cursor: pointer; background: var(--screen); color: var(--ink);
   border: 2px solid var(--ink); box-shadow: 2px 2px 0 rgba(0, 0, 0, .28);
 }
+.liveExpand, .returnLive {
+  position: absolute; right: 6px; top: 6px; z-index: 4; width: 32px; height: 32px;
+  font-size: 18px; line-height: 1; padding: 0; cursor: pointer;
+  background: var(--screen); color: var(--ink); border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, .28);
+  svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; stroke-linejoin: miter; }
+}
+.liveFlip { top: auto; bottom: 7px; }
+.liveShutter {
+  position: absolute; left: 50%; bottom: 7px; transform: translateX(-50%); z-index: 3;
+  width: 48px; height: 48px; border-radius: 50%; padding: 0; cursor: pointer;
+  background: var(--shell); border: 3px solid var(--ink); box-shadow: 0 0 0 3px var(--shell);
+  &:disabled { opacity: .5; }
+}
+.returnLive { top: 6px; }
 
 .meter { margin-top: 10px; position: relative; z-index: 1; }
 .lab {

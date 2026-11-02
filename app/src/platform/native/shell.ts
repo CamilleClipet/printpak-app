@@ -42,6 +42,10 @@ function dismissNativeOverlay(): boolean {
     ui.setCameraOpen(false);
     return true;
   }
+  if (ui.settingsOpen) {
+    ui.setSettingsOpen(false);
+    return true;
+  }
   if (ui.cropOpen) {
     ui.setCropOpen(false);
     return true;

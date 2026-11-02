@@ -4,7 +4,8 @@ import styles from './Tabs.module.scss';
 export interface TabDef {
   id: string;
   label: string;
-  content: ReactNode;
+  content?: ReactNode;
+  onSelect?: () => void;
 }
 
 export function Tabs({ tabs }: { tabs: TabDef[] }) {
@@ -19,7 +20,10 @@ export function Tabs({ tabs }: { tabs: TabDef[] }) {
             key={t.id}
             type="button"
             className={`${styles.tab} ${t.id === active ? styles.active : ''}`}
-            onClick={() => setActive(t.id)}
+            onClick={() => {
+              if (t.onSelect) t.onSelect();
+              else setActive(t.id);
+            }}
           >
             {t.label}
           </button>

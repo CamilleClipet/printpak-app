@@ -2,9 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { decode, isRawFile } from '../services/decode';
 import { shrink } from '../services/renderItem';
 import { useBatchStore } from '../state/batchStore';
+import { useUiStore } from '../state/uiStore';
 
 export function useImportFiles() {
   const addItems = useBatchStore((s) => s.addItems);
+  const setLiveView = useUiStore((s) => s.setLiveView);
   const [status, setStatus] = useState<string | null>(null);
 
   const addFiles = useCallback(async (list: FileList | File[]) => {
@@ -23,7 +25,10 @@ export function useImportFiles() {
       }
       setStatus(`Decoding ${i + 1}/${files.length}…`);
     }
-    if (ok.length) addItems(ok);
+    if (ok.length) {
+      addItems(ok);
+      setLiveView(false);
+    }
     if (bad.length && !ok.length) {
       const ext = (bad[0].split('.').pop() || '').toUpperCase();
       setStatus(isRawFile(bad[0])
@@ -33,7 +38,7 @@ export function useImportFiles() {
       setStatus(null);
       if (bad.length) console.warn('could not decode:', bad.join(', '));
     }
-  }, [addItems]);
+  }, [addItems, setLiveView]);
 
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {

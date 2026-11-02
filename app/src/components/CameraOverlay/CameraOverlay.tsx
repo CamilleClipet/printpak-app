@@ -6,11 +6,13 @@ import { useImportFiles } from '../../hooks/useImportFiles';
 import { useLiveDither } from '../../hooks/useLiveDither';
 import { useVideoRecording } from '../../hooks/useVideoRecording';
 import { formatElapsed } from '../../services/videoRecording';
+import { captureFrame } from '../../services/captureFrame';
 import { registerNativeBackDismiss } from '../../platform/native/backDismissRegistry';
 import { Slider } from '../Slider/Slider';
 import { VideoModal } from '../VideoModal/VideoModal';
 import { useBatchStore } from '../../state/batchStore';
 import { useDeviceStore } from '../../state/deviceStore';
+import { useUiStore } from '../../state/uiStore';
 import styles from './CameraOverlay.module.scss';
 
 const FPS_OPTIONS = [4, 8, 12, 24];
@@ -36,12 +38,16 @@ export function CameraOverlay({ onClose }: { onClose: () => void }) {
   const fileCamRef = useRef<HTMLInputElement>(null);
   const firedFallback = useRef(false);
   const addItems = useBatchStore((s) => s.addItems);
+  const setCur = useBatchStore((s) => s.setCur);
+  const itemCount = useBatchStore((s) => s.items.length);
   const { addFiles } = useImportFiles();
   const { active, setActive } = useActiveTone();
   const [tuneOpen, setTuneOpen] = useState(false);
-  const capture = useDeviceStore((s) => s.device.capture);
+  // Local, not persisted: the modal always opens in photo mode.
+  const [capture, setCapture] = useState<'photo' | 'video'>('photo');
   const fps = useDeviceStore((s) => s.device.fps);
   const setDevice = useDeviceStore((s) => s.setDevice);
+  const setLiveView = useUiStore((s) => s.setLiveView);
   const [video, setVideo] = useState<Blob | null>(null);
   const [pct, setPct] = useState(0);
 
@@ -71,16 +77,9 @@ export function CameraOverlay({ onClose }: { onClose: () => void }) {
   const shoot = () => {
     const videoEl = videoRef.current;
     if (!videoEl || !videoEl.videoWidth) return;
-    const shot = document.createElement('canvas');
-    shot.width = videoEl.videoWidth;
-    shot.height = videoEl.videoHeight;
-    const ctx = shot.getContext('2d')!;
-    if (facing === 'user') { ctx.translate(shot.width, 0); ctx.scale(-1, 1); }
-    ctx.drawImage(videoEl, 0, 0);
-    addItems([{
-      id: '', name: `capture-${Date.now()}.png`, source: shot,
-      width: shot.width, height: shot.height, rot: 0, own: null, skip: false,
-    }]);
+    addItems([{ id: '', ...captureFrame(videoEl, facing) }]);
+    setCur(itemCount);
+    setLiveView(false);
     onClose();
   };
 
@@ -102,10 +101,12 @@ export function CameraOverlay({ onClose }: { onClose: () => void }) {
       />
       {!error && (
         <div className={styles.head}>
-          <span>{videoMode ? 'Live dithered recording' : 'Live dithered preview'}</span>
-          <span>{ready ? `${pct.toFixed(1)}%` : '—'}</span>
+          <span className={styles.title}>{videoMode ? 'Live dithered recording' : 'Live dithered preview'}</span>
+          <span className={styles.coverage}>{ready ? `${pct.toFixed(1)}%` : '—'}</span>
+          <button type="button" className={styles.x} aria-label="Close camera" onClick={onClose}>×</button>
         </div>
       )}
+      {error && <div className={styles.head}><span className={styles.title}>Camera</span><button type="button" className={styles.x} aria-label="Close camera" onClick={onClose}>×</button></div>}
 
       <div className={styles.stage}>
         {error ? (
@@ -113,8 +114,21 @@ export function CameraOverlay({ onClose }: { onClose: () => void }) {
         ) : (
           <>
             <video ref={videoRef} playsInline muted style={{ display: 'none' }} />
-            <canvas ref={canvasRef} className={styles.canvas} />
-            {!ready && <div className={styles.empty}>Starting…</div>}
+            <div className={styles.frame}>
+              <canvas ref={canvasRef} className={styles.canvas} />
+              {ready && (
+                <button type="button" className={styles.flip} onClick={flip} disabled={recording}>Flip</button>
+              )}
+              {videoMode ? (
+                <button
+                  type="button" className={`${styles.shutter} ${styles.recBtn} ${recording ? styles.on : ''}`}
+                  aria-label="Record" onClick={toggleRecord} disabled={!ready}
+                />
+              ) : (
+                <button type="button" className={styles.shutter} aria-label="Capture" onClick={shoot} disabled={!ready} />
+              )}
+            </div>
+            {!ready && <div className={styles.starting}>Starting…</div>}
             {recording && <div className={styles.recTime}>{formatElapsed(elapsedMs)}</div>}
           </>
         )}
@@ -156,22 +170,16 @@ export function CameraOverlay({ onClose }: { onClose: () => void }) {
       )}
 
       <div className={styles.bar}>
-        <button type="button" className={styles.iconBtn} onClick={onClose}>Close</button>
         <button
           type="button" className={styles.iconBtn} aria-pressed={tuneOpen}
           onClick={() => setTuneOpen((o) => !o)}
         >
           Tune
         </button>
-        {videoMode ? (
-          <button
-            type="button" className={`${styles.shutter} ${styles.recBtn} ${recording ? styles.on : ''}`}
-            aria-label="Record" onClick={toggleRecord} disabled={!ready}
-          />
-        ) : (
-          <button type="button" className={styles.shutter} aria-label="Capture" onClick={shoot} disabled={!ready} />
-        )}
-        <button type="button" className={styles.iconBtn} onClick={flip} disabled={recording}>Flip</button>
+        <div className={styles.mode} aria-label="Capture mode">
+          <button type="button" aria-pressed={!videoMode} disabled={recording} onClick={() => setCapture('photo')}>Photo</button>
+          <button type="button" aria-pressed={videoMode} disabled={!mimeType || recording} title={mimeType ? undefined : 'Video recording is not supported'} onClick={() => setCapture('video')}>Video</button>
+        </div>
       </div>
 
       {video && <VideoModal blob={video} fps={fps} onClose={() => setVideo(null)} />}
