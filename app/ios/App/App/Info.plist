@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Print Pak</string>
+	<string>printpak</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -25,11 +25,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Print Pak uses the camera to take photos to dither and print.</string>
+	<string>printpak uses the camera to take photos to dither and print.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Print Pak saves your dithered images to Photos when you choose Save to Photos.</string>
+	<string>printpak saves your dithered images to Photos when you choose Save to Photos.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Print Pak uses Bluetooth to send images to your thermal printer.</string>
+	<string>printpak uses Bluetooth to send images to your thermal printer.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

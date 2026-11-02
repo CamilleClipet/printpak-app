@@ -76,7 +76,7 @@ export function BootSplash() {
   return (
     <div className={`${styles.boot} ${out ? styles.out : ''}`} onPointerDown={dismiss}>
       <button type="button" className={styles.skip} onClick={(e) => { e.stopPropagation(); dismiss(); }}>Skip</button>
-      <div className={styles.logo}>Print Pak</div>
+      <div className={styles.logo}>printpak</div>
     </div>
   );
 }

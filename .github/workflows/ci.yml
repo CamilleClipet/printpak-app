@@ -1,0 +1,96 @@
+name: CI
+
+# Checks every pull request and push to main: web checks, then unsigned
+# native builds. Publishing the website stays in deploy.yml.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: app
+
+jobs:
+  web:
+    name: Lint, tests, builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22 # Capacitor CLI needs Node >= 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx vitest run
+      - name: Website build (GitHub Pages)
+        run: npm run build
+      - name: Native web bundle
+        run: npm run build:native
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-web
+          path: app/dist
+          retention-days: 1
+
+  android:
+    name: Android release build (unsigned)
+    needs: web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: native-web
+          path: app/dist
+      - run: npx cap sync android
+      - name: Release bundle (R8 / minification)
+        working-directory: app/android
+        run: ./gradlew bundleRelease
+
+  ios:
+    name: iOS build (unsigned)
+    needs: web
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: native-web
+          path: app/dist
+      - run: npx cap sync ios
+      - name: Release build for the simulator, no signing
+        run: >
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release
+          -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO build

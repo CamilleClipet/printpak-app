@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import pkg from './package.json' with { type: 'json' }
 
 // GitHub Pages serves the production build as a project site at /printpak-app/, not
 // at the domain root, so the built asset URLs and the PWA scope need that
@@ -13,6 +14,7 @@ const BASE = '/printpak-app/'
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => ({
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   base: mode === 'native' ? './' : command === 'build' ? BASE : '/',
   server: {
     // Dev server normally rejects requests whose Host header isn't
@@ -33,8 +35,8 @@ export default defineConfig(({ command, mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable.png'],
       manifest: {
-        name: 'Print Pak',
-        short_name: 'Print Pak',
+        name: 'printpak',
+        short_name: 'printpak',
         description: 'Dither photos for thermal receipt printers.',
         start_url: BASE,
         scope: BASE,

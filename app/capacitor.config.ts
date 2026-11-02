@@ -4,7 +4,7 @@ const liveReloadUrl = process.env.CAP_SERVER_URL;
 
 const config: CapacitorConfig = {
   appId: 'printpak.app',
-  appName: 'Print Pak',
+  appName: 'printpak',
   webDir: 'dist',
   backgroundColor: '#9BBC0F',
   ios: {
