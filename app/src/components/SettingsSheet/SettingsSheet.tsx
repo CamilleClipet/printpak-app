@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { registerNativeBackDismiss } from '../../platform/native/backDismissRegistry';
 import { useUiStore } from '../../state/uiStore';
+import { AboutPanel } from '../AboutPanel/AboutPanel';
 import { ExportPanel } from '../ExportPanel/ExportPanel';
 import { SettingsPanel } from '../SettingsPanel/SettingsPanel';
 import styles from './SettingsSheet.module.scss';
@@ -30,6 +31,10 @@ export function SettingsSheet() {
         <section className={styles.group}>
           <h2 className={styles.section}>Export settings</h2>
           <ExportPanel />
+        </section>
+        <section className={styles.group}>
+          <h2 className={styles.section}>About</h2>
+          <AboutPanel />
         </section>
       </div>
     </div>

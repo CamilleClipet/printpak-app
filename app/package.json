@@ -1,12 +1,13 @@
 {
   "name": "app",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "build:native": "tsc -b && vite build --mode native",
+    "licenses": "node scripts/gen-licenses.mjs",
+    "build": "npm run licenses && tsc -b && vite build",
+    "build:native": "npm run licenses && tsc -b && vite build --mode native",
     "cap:sync": "npm run build:native && cap sync",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android",

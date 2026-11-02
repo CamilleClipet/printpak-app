@@ -34,7 +34,7 @@ export function TitleBar() {
 
   return (
     <header className={styles.brand}>
-      <b className={styles.title}>Print Pak</b>
+      <b className={styles.title}>printpak</b>
       <div className={styles.skins}>
         {SKINS.map((s) => (
           <button

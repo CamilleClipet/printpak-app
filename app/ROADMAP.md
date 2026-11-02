@@ -1,4 +1,4 @@
-# Print Pak React rewrite — gap-closing roadmap (2026-09-03)
+# printpak React rewrite — gap-closing roadmap (2026-09-03)
 
 ## Context
 
@@ -136,7 +136,7 @@ Phase 0 (visual system) and Phase 1 (batch + export correctness) are the highest
 ---
 ## Original context (superseded by the roadmap above, kept for history)
 
-Print Pak is currently a single 114KB `index.html` file (plus `sw.js`/`manifest.json`) with no build tooling: all CSS, DOM, and two `<script>` blocks (a clean pure-function "engine" for dithering/image processing, and a much larger "app" block for state/DOM/device APIs) live inline. The person building this app has no dev experience and wants it usable on their phone (iOS + Android) without going through app store submission. The goal of this refactor is:
+printpak is currently a single 114KB `index.html` file (plus `sw.js`/`manifest.json`) with no build tooling: all CSS, DOM, and two `<script>` blocks (a clean pure-function "engine" for dithering/image processing, and a much larger "app" block for state/DOM/device APIs) live inline. The person building this app has no dev experience and wants it usable on their phone (iOS + Android) without going through app store submission. The goal of this refactor is:
 1. A maintainable, componentized React codebase with real separation of concerns (pure engine vs. UI vs. state vs. device-API hooks).
 2. Ship it as an installable PWA (Add to Home Screen on iOS/Android) — no Apple/Google developer accounts, no store review.
 
