@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { storage } from '../services/storage';
+import { storage } from '../platform';
 
 export const SKINS = ['dmg', 'pocket', 'light', 'atomic', 'onebit'] as const;
 export type Skin = typeof SKINS[number];

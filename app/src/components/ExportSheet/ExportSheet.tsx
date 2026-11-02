@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { PRINT_WIDTH, type Darkness } from '../../printer/protocol';
+import type { PrinterDevice } from '../../platform';
 import { useDeviceStore } from '../../state/deviceStore';
 import { useExportSheetStore } from '../../state/exportSheetStore';
 import { usePrinterStore } from '../../state/printerStore';
@@ -16,10 +17,16 @@ const DARKNESS: Darkness[] = [1, 2, 3, 4];
 function PrintControls({ outputs, index }: { outputs: HTMLCanvasElement[]; index: number }) {
   const status = usePrinterStore((s) => s.status);
   const name = usePrinterStore((s) => s.name);
+  const lastDeviceName = usePrinterStore((s) => s.lastDeviceName);
   const progress = usePrinterStore((s) => s.progress);
   const message = usePrinterStore((s) => s.message);
   const error = usePrinterStore((s) => s.error);
+  const foundPrinters = usePrinterStore((s) => s.foundPrinters);
+  const scanActive = usePrinterStore((s) => s.scanActive);
   const connect = usePrinterStore((s) => s.connect);
+  const reconnect = usePrinterStore((s) => s.reconnect);
+  const choosePrinter = usePrinterStore((s) => s.choosePrinter);
+  const cancelScan = usePrinterStore((s) => s.cancelScan);
   const print = usePrinterStore((s) => s.print);
   const darkness = useDeviceStore((s) => s.device.darkness);
   const setDevice = useDeviceStore((s) => s.setDevice);
@@ -41,7 +48,10 @@ function PrintControls({ outputs, index }: { outputs: HTMLCanvasElement[]; index
     if (rebuild) show(rebuild(), rebuild);
   };
   const printing = status === 'printing';
+  const scanning = status === 'scanning';
   const canPrint = status === 'connected' && !tooWide;
+  const noPrinterError = error && message?.startsWith('No printer found.');
+  const connectToDevice = (device: PrinterDevice) => choosePrinter(device);
 
   return (
     <div className={styles.printer}>
@@ -65,7 +75,22 @@ function PrintControls({ outputs, index }: { outputs: HTMLCanvasElement[]; index
         </div>
       )}
 
-      {status === 'connected' || printing ? (
+      {scanning ? (
+        <>
+          <p className={styles.note}>{scanActive ? 'Searching for printers…' : 'Printers found'}</p>
+          {foundPrinters.map((device) => (
+            <button key={device.deviceId} type="button" className={styles.key} onClick={() => connectToDevice(device)}>
+              {device.name}{device.rssi === undefined ? '' : ` · ${device.rssi} dBm`}
+            </button>
+          ))}
+          <button type="button" className={styles.ghost} onClick={cancelScan}>Cancel</button>
+        </>
+      ) : noPrinterError ? (
+        <div className={styles.note}>
+          <p>{message}</p>
+          <button type="button" className={styles.ghost} onClick={connect}>Search again</button>
+        </div>
+      ) : status === 'connected' || printing ? (
         <div className={styles.row}>
           <button type="button" className={styles.key} disabled={!canPrint} onClick={() => print([outputs[index]], darkness)}>
             {printing ? `Printing… ${Math.round(progress * 100)}%` : outputs.length > 1 ? 'Print this' : 'Print'}
@@ -77,13 +102,20 @@ function PrintControls({ outputs, index }: { outputs: HTMLCanvasElement[]; index
           )}
         </div>
       ) : (
-        <button type="button" className={styles.key} disabled={status === 'connecting'} onClick={connect}>
-          {status === 'connecting' ? 'Connecting…' : 'Connect printer'}
-        </button>
+        lastDeviceName && status !== 'connecting' ? (
+          <div className={styles.row}>
+            <button type="button" className={styles.key} onClick={reconnect}>Reconnect {lastDeviceName}</button>
+            <button type="button" className={styles.ghost} onClick={connect}>Other printer</button>
+          </div>
+        ) : (
+          <button type="button" className={styles.key} disabled={status === 'connecting'} onClick={connect}>
+            {status === 'connecting' ? 'Connecting…' : 'Connect printer'}
+          </button>
+        )
       )}
 
       <p className={`${styles.status} ${error ? styles.err : ''}`}>
-        {message ?? (status === 'connected' || printing ? `Connected to ${name}` : '')}
+      {scanning || noPrinterError ? '' : message ?? (status === 'connected' || printing ? `Connected to ${name}` : '')}
       </p>
     </div>
   );

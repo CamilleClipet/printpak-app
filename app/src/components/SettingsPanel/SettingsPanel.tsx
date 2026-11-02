@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { solveComp } from '../../engine/calibration';
 import { buildChart, buildTest } from '../../services/calibrationChart';
 import { Slider } from '../Slider/Slider';
@@ -73,9 +74,14 @@ export function SettingsPanel() {
       </label>
       <div className={styles.hint}>Plays the wordmark and a chime on launch. Sound needs a prior tap on iOS.</div>
 
-      <div className={styles.legend}>Sharing</div>
-      <button type="button" className={styles.ghost} onClick={copyLink}>{shareLabel}</button>
-      <div className={styles.hint}>The values travel in the address. Handy for moving a setting from phone to desktop.</div>
+      {/* The link points at capacitor://localhost inside the native app, which is useless to share. */}
+      {!Capacitor.isNativePlatform() && (
+        <>
+          <div className={styles.legend}>Sharing</div>
+          <button type="button" className={styles.ghost} onClick={copyLink}>{shareLabel}</button>
+          <div className={styles.hint}>The values travel in the address. Handy for moving a setting from phone to desktop.</div>
+        </>
+      )}
 
       <div className={styles.legend}>Formats</div>
       <div className={styles.hint}>

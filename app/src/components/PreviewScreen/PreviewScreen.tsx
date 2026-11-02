@@ -15,6 +15,7 @@ function Thumb({ index }: { index: number }) {
   const item = useBatchStore((s) => s.items[index]);
   const cur = useBatchStore((s) => s.cur);
   const setCur = useBatchStore((s) => s.setCur);
+  const setLiveView = useUiStore((s) => s.setLiveView);
   const tone = useToneStore((s) => s.tone);
   const comp = useDeviceStore((s) => s.device.comp);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -31,7 +32,7 @@ function Thumb({ index }: { index: number }) {
       type="button"
       className={`${styles.thumb} ${item.skip ? styles.off : ''}`}
       aria-current={index === cur}
-      onClick={() => setCur(index)}
+      onClick={() => { setCur(index); setLiveView(false); }}
     >
       <canvas ref={canvasRef} />
     </button>
@@ -45,20 +46,18 @@ export function PreviewScreen() {
   const tone = useToneStore((s) => s.tone);
   const cameraOpen = useUiStore((s) => s.cameraOpen);
   const setCameraOpen = useUiStore((s) => s.setCameraOpen);
+  const liveView = useUiStore((s) => s.liveView);
+  const setLiveView = useUiStore((s) => s.setLiveView);
   // Coverage while the live viewfinder is showing, not just a captured
   // photo — the original updates its gauge continuously while framing
   // (index.html:1858-1861). Reset once a real result exists so a stale
   // live reading never lingers behind an actual photo.
   const [liveCoverage, setLiveCoverage] = useState<ProcessResult | null>(null);
   useEffect(() => {
-    if (result) setLiveCoverage(null);
-  }, [result]);
-
-  useEffect(() => {
     if (canvasRef.current && result) paint(canvasRef.current, result);
   }, [result]);
 
-  const active = result ?? liveCoverage;
+  const active = liveView && !cameraOpen ? liveCoverage : result ?? liveCoverage;
   const pct = active?.pct ?? 0;
   const verdict = coverageVerdict(pct);
   const blocksFilled = Math.min(12, Math.round(pct / 4));
@@ -67,8 +66,13 @@ export function PreviewScreen() {
     <div className={styles.pin}>
       <div className={styles.lcd}>
         <div className={styles.well}>
-          {result ? (
-            <canvas ref={canvasRef} className={styles.canvas} />
+          {result && !liveView ? (
+            <>
+              <canvas ref={canvasRef} className={styles.canvas} />
+              <button type="button" className={styles.returnLive} aria-label="Return to live camera" onClick={() => setLiveView(true)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l1.5-2h7L17 7h3v12H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+              </button>
+            </>
           ) : !cameraOpen ? (
             <LiveViewfinder onOpenCamera={() => setCameraOpen(true)} onCoverage={setLiveCoverage} />
           ) : null}
@@ -97,7 +101,8 @@ export function PreviewScreen() {
           </div>
         </div>
 
-        {items.length > 1 && (
+        {/* In live view a single photo still gets its thumbnail, so it's clear it was kept. */}
+        {(items.length > 1 || (liveView && items.length > 0)) && (
           <div className={styles.film}>
             {items.map((it, i) => <Thumb key={it.id} index={i} />)}
           </div>

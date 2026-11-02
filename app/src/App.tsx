@@ -9,8 +9,7 @@ import { PreviewScreen } from './components/PreviewScreen/PreviewScreen';
 import { Tabs } from './components/Tabs/Tabs';
 import { TonePanel } from './components/TonePanel/TonePanel';
 import { StylePanel } from './components/StylePanel/StylePanel';
-import { ExportPanel } from './components/ExportPanel/ExportPanel';
-import { SettingsPanel } from './components/SettingsPanel/SettingsPanel';
+import { SettingsSheet } from './components/SettingsSheet/SettingsSheet';
 import { TitleBar } from './components/TitleBar/TitleBar';
 import { hashToState } from './services/urlState';
 import { useBatchStore } from './state/batchStore';
@@ -20,6 +19,7 @@ import { usePresetsStore } from './state/presetsStore';
 import { useSkinStore } from './state/skins';
 import { useToneStore } from './state/toneStore';
 import { useUiStore } from './state/uiStore';
+import { hideNativeSplash } from './platform/native/shell';
 
 function App() {
   const loadDevice = useDeviceStore((s) => s.load);
@@ -33,8 +33,10 @@ function App() {
   const setCropOpen = useUiStore((s) => s.setCropOpen);
   const cameraOpen = useUiStore((s) => s.cameraOpen);
   const setCameraOpen = useUiStore((s) => s.setCameraOpen);
+  const setSettingsOpen = useUiStore((s) => s.setSettingsOpen);
 
   useEffect(() => {
+    hideNativeSplash();
     loadSkin();
     loadDevice();
     loadPresets();
@@ -58,12 +60,12 @@ function App() {
         tabs={[
           { id: 'tone', label: 'Tone', content: <TonePanel /> },
           { id: 'style', label: 'Style', content: <StylePanel /> },
-          { id: 'export', label: 'Export', content: <ExportPanel /> },
-          { id: 'settings', label: 'Settings', content: <SettingsPanel /> },
+          { id: 'settings', label: 'Settings', onSelect: () => setSettingsOpen(true) },
         ]}
       />
       <BottomBar />
       <ExportSheet />
+      <SettingsSheet />
       <LyricsSearch />
       {/* Rendered outside PreviewScreen's `.pin` (a position:sticky stacking
           context) so their z-index is compared against BottomBar/ExportSheet

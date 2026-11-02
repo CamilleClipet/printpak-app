@@ -7,9 +7,10 @@ ASCII/glyph art, a Game Boy Camera look, etc.), tune white point/contrast/glitch
 effects, then export a PNG (or a batch of them stitched into one strip) ready
 to send to the printer.
 
-It's built as an installable PWA — "Add to Home Screen" on iOS/Android — with
-no app store, no backend, and no image ever leaving the device: everything is
-computed client-side in the browser.
+It's built as an installable PWA — "Add to Home Screen" on iOS/Android — and
+is also packaged as native iOS/Android apps (see "Native apps" below). There
+is no backend, and no image ever leaves the device: everything is computed
+on the device.
 
 ## Project layout
 
@@ -124,6 +125,141 @@ same-Wi-Fi method above (it's also the reason the dev server has
 `server.allowedHosts: true` in `vite.config.ts` — otherwise Vite rejects
 requests carrying a tunnel's hostname).
 
+## Native apps (iOS and Android)
+
+The same code is also packaged as an iOS and an Android app with
+[Capacitor](https://capacitorjs.com/). The native projects live in
+`app/ios/` and `app/android/`. Inside the apps, printing uses native
+Bluetooth, so Bluefy isn't needed. Plan and known issues:
+`MOBILE_MIGRATION.md`.
+
+### One-time setup
+
+- **iOS**: install **Xcode** from the Mac App Store, open it once and accept
+  the extra components it offers to install. In **Xcode → Settings →
+  Accounts**, add your Apple ID. A free account is enough to run the app on
+  your own iPhone.
+- **Android**: install [Android Studio](https://developer.android.com/studio).
+  On first launch, let the setup wizard install the Android SDK. Android
+  builds need **JDK 21**: Android Studio ships one (its "JBR"). Add this
+  line to `~/.zshrc`, then open a new terminal:
+  ```sh
+  export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+  ```
+
+### The loop: build, sync, run
+
+The native apps don't use the dev server: they contain a copy of the built
+web app. **After every change under `src/`**, from `app/`:
+
+```sh
+npm run cap:sync
+```
+
+This builds the web app for the native apps (`npm run build:native`) and
+copies it into both native projects. Then run the app from Xcode or Android
+Studio (see below). Skipping this step means the phone runs the previous
+version.
+
+`cap:sync` writes the native build into `app/dist/`. Run `npm run build`
+afterwards if you want `dist/` to contain the website build again (with
+the service worker), for example before `npm run preview`.
+
+### Testing with Xcode (iPhone or simulator)
+
+1. From `app/`, run `npm run cap:sync`, then `npm run cap:ios`.
+   Xcode opens `ios/App/App.xcodeproj`. The project uses Swift Package
+   Manager, so there is no `.xcworkspace` and no `pod install`.
+2. Wait until the status box in the middle of the toolbar no longer says
+   "Resolving Package Graph…" or "Fetching…".
+3. **First time only, signing:** in the left sidebar click **App** (blue
+   icon) → target **App** → **Signing & Capabilities**. Tick "Automatically
+   manage signing" and pick your **Team** (your Apple ID).
+4. In the device menu at the top ("App > …"), pick your iPhone (plugged in
+   by USB, or on the same Wi-Fi once paired) or a simulator such as
+   "iPhone 16".
+5. Press **▶** (⌘R).
+6. **First time on a real iPhone:**
+   - If Xcode asks for it, turn on **Settings → Privacy & Security →
+     Developer Mode** on the iPhone. The iPhone restarts.
+   - With a free account, the first launch is blocked until you trust
+     yourself as a developer: **Settings → General → VPN & Device
+     Management** → your Apple ID → **Trust**. Then press ▶ again.
+   - Allow Bluetooth and Camera when the app asks.
+
+The simulator has no Bluetooth and no camera. Use it for layout only, and
+a real iPhone for printing and the camera. Apps signed with a free account
+stop opening after 7 days. Press ▶ again to reinstall.
+
+**Console logs (Web Inspector):** on the iPhone, turn on **Settings → Apps
+→ Safari → Advanced → Web Inspector**. On the Mac, in Safari, turn on
+**Settings → Advanced → Show features for web developers**. While the app
+runs, choose **Develop → *your iPhone* → localhost** in Safari to get the
+console, network and elements panels. The bottom panel in Xcode shows
+native logs and crash reasons.
+
+**If the build fails with package or "missing module" errors**, typically
+after `npm install`/`npm ci`: in Xcode, choose **File → Packages → Reset
+Package Caches**, then **Product → Clean Build Folder** (⇧⌘K), then ▶.
+If that's not enough, quit Xcode and run
+`rm -rf ~/Library/Developer/Xcode/DerivedData/App-*`, then
+`npm run cap:sync && npm run cap:ios`.
+
+**"No signing certificate" / "0 valid identities":** in **Xcode → Settings
+→ Accounts**, select your Apple ID → **Manage Certificates…** → **+** →
+**Apple Development**.
+
+### Testing with Android Studio (emulator or phone)
+
+1. From `app/`, run `npm run cap:sync`, then `npm run cap:android`.
+   Android Studio opens the `android/` folder.
+2. Wait for the **Gradle sync** to finish (progress bar at the bottom right).
+   The first time it downloads a lot and can take several minutes.
+3. **First time only, emulator:** open **Device Manager** (phone icon on the
+   right side bar, or **Tools → Device Manager**) → **+** → **Create Virtual
+   Device**. Pick for example **Pixel 8a**, choose a recent system image
+   (download it), then **Finish**.
+4. In the device menu at the top, pick the emulator (or a real phone), then
+   press **▶ Run 'app'**.
+
+You can also skip the IDE: `npx cap run android` builds and asks which
+device to install on.
+
+The emulator has no Bluetooth, and its camera shows a fake 3D scene. It's
+fine for layout, import, export and the back button, but printing needs a
+real Android phone.
+
+**Real Android phone:** on the phone, open **Settings → About phone** and
+tap **Build number** 7 times to unlock developer options. Then turn on
+**Settings → System → Developer options → USB debugging**. Plug it in,
+accept the "Allow USB debugging?" prompt, and it appears in the device menu.
+
+**Console logs:** with the app running, open `chrome://inspect` in Chrome
+on the Mac and click **inspect** under the app's WebView. Android Studio's
+**Logcat** tab (bottom) shows native logs and crashes.
+
+**If Gradle complains about the Java version**, check that `JAVA_HOME`
+points to Android Studio's JDK (see one-time setup), or set
+`org.gradle.java.home` to the same path in `~/.gradle/gradle.properties`.
+To check a build from the terminal: `cd android && ./gradlew assembleDebug`.
+
+### Live reload (optional)
+
+To see changes on the device without running `cap:sync` each time, run
+these in two terminals from `app/`:
+
+```sh
+npm run dev -- --host 0.0.0.0
+npm run cap:live:ios      # or: npm run cap:live:android
+```
+
+The app then loads from the dev server on your Mac over Wi-Fi, so the
+phone and the Mac must be on the same network. Accept the development
+certificate if the phone asks. If the wrong network address is detected,
+set it yourself: `CAP_SERVER_HOST=192.168.1.20 npm run cap:live:ios`.
+Run `npm run cap:sync` and ▶ afterwards to go back to a normal build, which
+doesn't need the Mac.
+
 ## Deploying
 
 The live site is <https://camilleclipet.github.io/printpak-app/> (GitHub Pages).
@@ -146,7 +282,7 @@ npm run build # outputs to app/dist/
 
 ## Printing
 
-With a compatible thermall paper printer ([example](https://www.amazon.fr/eSynic-Imprimante-85%C3%9783%C3%9740mm-Impression-Autocollante/dp/B0FXWDRT99?th=1)): if you're on iOs, open the app url in [Bluefy app](https://bluefy.app/) - on Android it works as is. Connect to the printer, pick the darkness, and print.
+With a compatible thermall paper printer ([example](https://www.amazon.fr/eSynic-Imprimante-85%C3%9783%C3%9740mm-Impression-Autocollante/dp/B0FXWDRT99?th=1)): if you're on iOs, open the app url in [Bluefy app](https://bluefy.app/) - on Android it works as is. The native iOS/Android apps print directly, no extra app needed. Connect to the printer, pick the darkness, and print.
 
 ### One-time repo setup (already done, noted for reference)
 

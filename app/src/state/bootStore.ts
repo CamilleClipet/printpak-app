@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { storage } from '../services/storage';
+import { storage } from '../platform';
 
 const STORAGE_KEY = 'trame:boot';
 

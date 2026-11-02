@@ -1,0 +1,21 @@
+.overlay {
+  position: fixed; inset: 0; z-index: 80; background: var(--shell); display: flex; flex-direction: column;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+.head {
+  display: flex; align-items: center; justify-content: space-between; padding: 11px 13px 9px;
+  border-bottom: 3px solid var(--accent);
+}
+.title { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--chrome); font-weight: 700; }
+.x {
+  width: 40px; height: 40px; padding: 0; cursor: pointer; font-family: var(--mono); font-size: 24px; line-height: 1; font-weight: 700;
+  background: var(--shell-dark); color: var(--chrome); border: 2px solid var(--shell-line); box-shadow: 3px 3px 0 rgba(0, 0, 0, .3);
+}
+.body { flex: 1; min-height: 0; overflow: auto; padding: 4px 15px 26px; }
+.section {
+  margin: 15px -15px 18px; padding: 12px 15px 9px; border-bottom: 2px solid var(--shell-line);
+  color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+}
+/* The section heading is already underlined, so the first sub-heading's rule would double it. */
+.group > div > :first-child::after { display: none; }
+.group + .group { margin-top: 30px; }

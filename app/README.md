@@ -30,3 +30,7 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## Native apps (Capacitor)
+
+See "Native apps (iOS and Android)" in the root `README.md`: setup, `npm run cap:sync`, testing with Xcode and Android Studio, logs, and live reload.

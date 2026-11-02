@@ -1,3 +1,5 @@
+import type { KeyValueStorage } from '../types';
+
 /** localStorage wrapper with an in-memory fallback, mirroring the original
  *  single-file app's `store` object. */
 const mem: Record<string, unknown> = {};
@@ -11,7 +13,7 @@ const hasLS = (() => {
   }
 })();
 
-export const storage = {
+export const storage: KeyValueStorage = {
   get<T>(key: string): T | null {
     if (hasLS) {
       const raw = localStorage.getItem(key);

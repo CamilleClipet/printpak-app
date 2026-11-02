@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { ToneSettings } from '../engine/types';
-import { storage } from '../services/storage';
+import { storage } from '../platform';
 
 export interface Preset {
   name: string;

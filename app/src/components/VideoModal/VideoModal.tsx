@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { saveFile, shareFile } from '../../platform';
 import styles from './VideoModal.module.scss';
 
 export function VideoModal({ blob, fps, onClose }: { blob: Blob; fps: number; onClose: () => void }) {
@@ -20,23 +21,9 @@ export function VideoModal({ blob, fps, onClose }: { blob: Blob; fps: number; on
   const info = `${ext} · ${fps} fps · ${(blob.size / 1048576).toFixed(1)} MB`;
 
   const save = async () => {
-    const file = new File([blob], `printpak.${ext.toLowerCase()}`, { type: blob.type });
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file] });
-        return;
-      } catch (e) {
-        if ((e as Error)?.name === 'AbortError') return;
-        // fall through to the download link on any other share failure
-      }
-    }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(file);
-    a.download = file.name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    const name = `printpak.${ext.toLowerCase()}`;
+    const r = await shareFile(blob, name);
+    if (r === 'unsupported') await saveFile(blob, name);
   };
 
   const close = () => {
@@ -45,13 +32,16 @@ export function VideoModal({ blob, fps, onClose }: { blob: Blob; fps: number; on
   };
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.box}>
+    <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Recorded video">
+      <header className={styles.head}>
+        <span className={styles.title}>Recorded video</span>
+        <button type="button" className={styles.x} aria-label="Close" onClick={close}>×</button>
+      </header>
+      <div className={styles.body}>
         {url && <video ref={videoRef} className={styles.video} src={url} controls loop playsInline />}
         <p className={styles.info}>{info}</p>
         <p className={styles.hint}>Video doesn't save the same way as a photo — use the button below.</p>
         <button type="button" className={styles.save} onClick={save}>Save video</button>
-        <button type="button" className={styles.close} onClick={close}>Close</button>
       </div>
     </div>
   );
